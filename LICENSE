@@ -1,0 +1,131 @@
+MeowPrinter
+Copyright (C) 2024-2025  MeowPrinter contributors
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+The full text of the GNU General Public License version 3 is available at:
+https://www.gnu.org/licenses/gpl-3.0.txt
+
+-------------------------------------------------------------------------------
+
+ORIGIN
+
+This project is a derivative work of Cat-Printer
+  <https://github.com/NaitLee/Cat-Printer>
+  Copyright (C) NaitLee and contributors
+  Licensed under the GNU General Public License v3.0 or later.
+
+The BLE protocol was independently reverse-engineered with reference to:
+  catprinter  <https://github.com/rbaron/catprinter>   (MIT License)
+  catprinter  <https://github.com/rhnvrm/catprinter>   (MIT License)
+
+No proprietary code or firmware has been copied or redistributed.
+
+-------------------------------------------------------------------------------
+
+THIRD-PARTY NOTICES
+
+The following open-source components are used at runtime or bundled in
+the Android APK. Each is redistributed under its respective license.
+
+  bleak — Bluetooth Low Energy platform Agnostic Klient
+    <https://github.com/hbldh/bleak>
+    Copyright (c) 2019–2024 Henrik Blidh and contributors
+    MIT License
+
+    The Android backend of bleak includes two Java source files:
+      PythonScanCallback.java
+      PythonBluetoothGattCallback.java
+    These are compiled into the Android APK and are covered by the same
+    MIT License as the bleak project.
+
+  Pillow — Python Imaging Library fork
+    <https://python-pillow.org/>
+    Copyright (c) 2010–2024 Jeffrey A. Clark and contributors
+    HPND License (Historical Permission Notice and Disclaimer)
+
+  pyzbar — Read one-dimensional and two-dimensional barcodes
+    <https://github.com/NaturalHistoryMuseum/pyzbar>
+    Copyright (c) 2016 Natural History Museum, London
+    MIT License
+
+  FastAPI
+    <https://fastapi.tiangolo.com/>
+    Copyright (c) 2018–2024 Sebastián Ramírez
+    MIT License
+
+  Starlette (FastAPI dependency)
+    <https://www.starlette.io/>
+    Copyright (c) 2018 Tom Christie
+    BSD 3-Clause License
+
+  Uvicorn
+    <https://www.uvicorn.org/>
+    Copyright (c) 2017–2024 Encode OSS Ltd.
+    BSD 3-Clause License
+
+  Pydantic (FastAPI dependency)
+    <https://docs.pydantic.dev/>
+    Copyright (c) 2017–2024 Samuel Colvin and contributors
+    MIT License
+
+  Preact
+    <https://preactjs.com/>
+    Copyright (c) 2015–2024 Jason Miller
+    MIT License
+
+  @preact/signals
+    <https://github.com/preactjs/signals>
+    Copyright (c) 2022–2024 Preact Team
+    MIT License
+
+  Vite
+    <https://vite.dev/>
+    Copyright (c) 2019–2024 Evan You and Vite contributors
+    MIT License
+
+  python-for-android (p4a)
+    <https://python-for-android.readthedocs.io/>
+    Copyright (c) 2012–2024 Kivy Team and contributors
+    MIT License
+
+  Buildozer
+    <https://buildozer.readthedocs.io/>
+    Copyright (c) 2012–2024 Kivy Team and contributors
+    MIT License
+
+  pyjnius
+    <https://github.com/kivy/pyjnius>
+    Copyright (c) 2010–2024 Kivy Team and contributors
+    MIT License
+
+  async-timeout
+    <https://github.com/aio-libs/async-timeout>
+    Copyright (c) 2016–2024 Andrew Svetlov and contributors
+    Apache License 2.0
+
+  typing-extensions
+    <https://github.com/python/typing_extensions>
+    Copyright (c) 2001–2024 Python Software Foundation
+    PSF License (Python Software Foundation License Version 2)
+
+The Android APK also bundles a patched version of PythonActivity.java,
+originally from the python-for-android WebView bootstrap (MIT License),
+modified to add WebChromeClient file-picker support.
+
+-------------------------------------------------------------------------------
+
+DISCLAIMER
+
+This software communicates with thermal printers over Bluetooth Low Energy
+using a protocol that was reverse-engineered from observable BLE traffic.
+The authors and contributors are not affiliated with, endorsed by, or
+connected to any printer manufacturer or their official applications.
