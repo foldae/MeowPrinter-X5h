@@ -12,7 +12,7 @@ version = 1.0.0
 #   www/              ← Built frontend (copied from frontend/dist/)
 source.dir = .
 source.include_exts = py,png,jpg,json,html,css,js,svg,ico,woff,woff2,ttf
-source.include_patterns = main.py,meowprinter/**,www/**,meowprinter_logo.png
+source.include_patterns = main.py,meowprinter/**,www/**,images/meowprinter_logo.png
 source.exclude_patterns = buildozer.spec,build-android.*,frontend/**,backend/**,.git/**,node_modules/**,.buildozer/**,bin/**
 
 # Python 3
@@ -37,10 +37,10 @@ android.sdk_packages = platforms;android-33 build-tools;33.0.0
 android.permissions = BLUETOOTH,BLUETOOTH_SCAN,BLUETOOTH_CONNECT,BLUETOOTH_ADMIN,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,INTERNET
 
 # Branding
-icon.filename = meowprinter_logo.png
+icon.filename = images/meowprinter_logo.png
 android.adaptive_icon_background = #2AA8A8
-android.adaptive_icon_foreground = meowprinter_logo.png
-presplash.filename = meowprinter_logo.png
+android.adaptive_icon_foreground = images/meowprinter_logo.png
+presplash.filename = images/meowprinter_logo.png
 presplash.color = #141418
 
 # Webview connects to this port
