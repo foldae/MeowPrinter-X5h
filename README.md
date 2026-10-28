@@ -2,7 +2,7 @@
 
 MeowPrinter X5h is a modified fork of [MeowPrinter](https://github.com/elyez-dev/MeowPrinter), originally created by **elyez-dev**.
 
-This fork is developed and maintained by **[foldae](https://github.com/foldae)**. It adds verified support for the **X5h-DBA2** thermal printer, Android build fixes, automatic printer reconnection, an improved mobile interface, and advanced text-printing controls.
+This fork adds verified support for the **X5h-DBA2** thermal printer, Android build fixes, automatic printer reconnection, an improved mobile interface, and advanced text-printing controls.
 
 The project remains licensed under **GPL-3.0-or-later**.
 
