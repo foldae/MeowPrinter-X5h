@@ -1,10 +1,10 @@
 [app]
 
 # App metadata
-title = MeowPrinter
+title = MeowPrinter X5h
 package.name = meowprinter
 package.domain = io.github.meowprinter
-version = 1.0.0
+version = 1.1.0
 
 # Source directory — the build scripts copy everything needed to project root:
 #   main.py           ← p4a entry point
@@ -37,10 +37,10 @@ android.sdk_packages = platforms;android-33 build-tools;33.0.0
 android.permissions = BLUETOOTH,BLUETOOTH_SCAN,BLUETOOTH_CONNECT,BLUETOOTH_ADMIN,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,INTERNET
 
 # Branding
-icon.filename = images/meowprinter_logo.png
+icon.filename = images/meowprinter_x5h_icon.png
 android.adaptive_icon_background = #2AA8A8
 android.adaptive_icon_foreground = images/meowprinter_logo.png
-presplash.filename = images/meowprinter_logo.png
+presplash.filename = images/meowprinter_x5h_splash.png
 presplash.color = #141418
 
 # Webview connects to this port

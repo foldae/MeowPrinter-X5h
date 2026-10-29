@@ -144,7 +144,7 @@ export function App() {
         </button>
         <div class="brand-block centered-brand">
           <img src="/meowprinter_logo.png" alt="MeowPrinter" class="logo-img" />
-          <span>MeowPrinter</span>
+          <span>MeowPrinter X5h</span>
         </div>
         <button
           class={`printer-status ${connected ? "is-connected" : "is-disconnected"}`}
@@ -168,7 +168,7 @@ export function App() {
 
       <div class={`menu-backdrop ${menuOpen ? "visible" : ""}`} onClick={() => setMenuOpen(false)} />
       <aside class={`hamburger-drawer ${menuOpen ? "open" : ""}`} aria-hidden={!menuOpen}>
-        <div class="drawer-header"><strong>MeowPrinter</strong><button class="drawer-close" onClick={() => setMenuOpen(false)}>×</button></div>
+        <div class="drawer-header"><strong>MeowPrinter X5h</strong><button class="drawer-close" onClick={() => setMenuOpen(false)}>×</button></div>
         <button class={tab === "print" ? "active" : ""} aria-current={tab === "print" ? "page" : undefined} onClick={() => navigate("print")}>Print</button>
         <button class={tab === "settings" ? "active" : ""} aria-current={tab === "settings" ? "page" : undefined} onClick={() => navigate("settings")}>Settings</button>
         <button class={tab === "about" ? "active" : ""} aria-current={tab === "about" ? "page" : undefined} onClick={() => navigate("about")}>About</button>
@@ -199,5 +199,29 @@ function PrinterStatusIcon() {
 }
 
 function AboutPanel() {
-  return <div class="panel card about-panel"><img src="/meowprinter_logo.png" alt="MeowPrinter" style={{ width: "80px" }} /><h2>MeowPrinter</h2><p>Open-source toolkit for BLE thermal cat printers.</p><hr class="divider" /><small>GPL-3.0-or-later</small></div>;
+  return (
+    <div class="panel card about-panel">
+      <img src="/meowprinter_logo.png" alt="MeowPrinter X5h" style={{ width: "96px" }} />
+      <h2>MeowPrinter X5h</h2>
+      <p><strong>Version 1.1.0-x5h.1</strong></p>
+      <p>A modified MeowPrinter fork with verified X5h-DBA2 support and Android improvements.</p>
+      <hr class="divider" />
+      <p><strong>Modified and maintained by foldae.</strong></p>
+      <p>Based on MeowPrinter, originally created by elyez-dev.</p>
+      <h3>Verified support</h3>
+      <ul class="about-list">
+        <li>X5h-DBA2 BLE discovery, connection, and automatic reconnection</li>
+        <li>Text and image printing at 384 px</li>
+        <li>Android image picker and verified BLE callbacks</li>
+        <li>Advanced text formatting and reduced paper use</li>
+        <li>Improved mobile interface and system theme support</li>
+      </ul>
+      <div class="about-links">
+        <a href="https://github.com/foldae/MeowPrinter-X5h" target="_blank" rel="noreferrer">Source code</a>
+        <a href="https://github.com/elyez-dev/MeowPrinter" target="_blank" rel="noreferrer">Original project</a>
+      </div>
+      <hr class="divider" />
+      <small>GPL-3.0-or-later</small>
+    </div>
+  );
 }

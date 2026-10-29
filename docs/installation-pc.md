@@ -31,7 +31,6 @@ Download from [nodejs.org](https://nodejs.org/).
 
 | Feature | Windows | Linux (Debian/Ubuntu) | macOS |
 |---|---|---|---|
-| PDF printing | Install [ImageMagick](https://imagemagick.org/script/download.php#windows) and [Ghostscript](https://www.ghostscript.com/releases/gsdnld.html); tick "Add to PATH" for both | `sudo apt install imagemagick ghostscript` | `brew install imagemagick ghostscript` |
 | QR code scanning | Included with pyzbar wheel | `sudo apt install libzbar0` | `brew install zbar` |
 
 ---
@@ -147,40 +146,6 @@ Run any command with `--help` for all available options.
 
 ---
 
-## PDF printing
-
-PDF printing requires **ImageMagick** with **Ghostscript** as a delegate.
-ImageMagick handles the conversion pipeline; Ghostscript is what actually
-rasterizes the PDF pages. Both must be installed.
-
-**Windows:**
-1. Install [Ghostscript](https://www.ghostscript.com/releases/gsdnld.html) — use the 64-bit installer and let it add itself to PATH
-2. Install [ImageMagick](https://imagemagick.org/script/download.php#windows) — tick "Add to system PATH" during setup
-3. Verify:
-   ```
-   magick --version
-   gswin64c --version
-   ```
-
-**Linux:**
-```bash
-sudo apt install imagemagick ghostscript   # Debian/Ubuntu
-sudo dnf install ImageMagick ghostscript   # Fedora
-```
-
-**macOS:**
-```bash
-brew install imagemagick ghostscript
-```
-
-> **Note:** On some Linux distributions, ImageMagick's default security policy
-> (`/etc/ImageMagick-*/policy.xml`) blocks PDF processing. If you get a
-> `not authorized` error, open that file and change the PDF policy line from
-> `rights="none"` to `rights="read|write"`.
-
-
----
-
 ## Troubleshooting
 
 **`bleak` not finding any devices on Windows**
@@ -197,6 +162,3 @@ brew install imagemagick ghostscript
 **Frontend not loading (blank page or 404)**
 - Build the frontend first: `cd frontend && npm run build`
 - The server serves from `frontend/dist/` — this folder must exist
-
-**PDF printing: `magick: command not found` or `convert: command not found`**
-- Install ImageMagick and Ghostscript (see above) and make sure both are on your PATH

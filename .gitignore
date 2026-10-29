@@ -32,3 +32,25 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Local Android build artifacts
+
+.buildozer/
+
+bin/
+
+frontend/node_modules/
+
+frontend/dist/
+
+www/
+
+meowprinter/
+
+*.apk
+
+*.aab
+
+*.log
+
+*.before-*

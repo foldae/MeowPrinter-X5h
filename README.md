@@ -1,171 +1,97 @@
-# MeowPrinter
+# MeowPrinter X5h
 
-<img src="images/meowprinter_logo.png" alt="MeowPrinter logotype" width="20%" style="margin: 0 0 20px 0;">
+MeowPrinter X5h is a modified fork of [MeowPrinter](https://github.com/elyez-dev/MeowPrinter), originally created by **elyez-dev**.
 
+This fork is developed and maintained by **[foldae](https://github.com/foldae)**. It adds verified support for the **X5h-DBA2** thermal printer, Android build fixes, automatic printer reconnection, an improved mobile interface, and advanced text-printing controls.
 
-Open-source toolkit for BLE thermal cat printers (GB01, PD01, and compatible models).
+The project remains licensed under **GPL-3.0-or-later**.
 
-Includes a **web UI** (desktop + Android), a **CLI**, and a **Python library** for scripting labels, tickets, address strips, and more.
+## Highlights
 
-## Features
+### Verified X5h-DBA2 support
 
-- **Web UI** — drag-and-drop images, draw text, preview with thermal simulation, live brightness/dither controls
-- **BLE scanning & connection** — works on desktop (bleak) and Android
-- **Print modes** — Floyd-Steinberg dithering, halftone (Bayer 4×4), direct threshold
-- **PDF printing** — renders each page and sends it to the printer (only PC)
-- **Badge / QR label** — auto detects barcodes and qr codes in images and prints them with appropriate size
-- **Ticket system** — script to print numbered tickets with custom headers, printed from CLI (only PC)
-- **Address labels** — script to print mailing address strips, printed sideways for maximum font size (only PC)
-- **Multilingual UI** — English, Spanish, German, Chinese (4 variants), lolcat
-- **Android APK** — self-contained app built with Buildozer + Docker, no Android Studio required
-- **CLI** — scan, print images/text, serve the web UI, generate tickets and address labels
+- BLE discovery and connection
+- Direct reconnection to the last associated printer
+- 384 px print width
+- Verified text and image printing
+- Five-second default scan duration
+- Printer connection state in the application header
 
-<table><tr>
-<td><img src="images/web_interface_screenshot.png" alt="MeowPrinter web UI" height="320"></td>
-<td><img src="images/phone_screenshot.jpeg" alt="MeowPrinter phone interface" height="320"></td>
-</tr></table>
+### Android reliability
 
-## Supported printers
+- Preserved `PythonScanCallback`
+- Preserved `PythonBluetoothGattCallback`
+- Preserved the custom `PythonActivity` file picker
+- Verified Java bridge classes in the final APK
+- Docker and Buildozer workflow with ownership recovery
+- APK output marked as verified only after DEX checks pass
 
-| Model | Notes |
-|-------|-------|
-| PD01  | Fully supported, including PD01-specific tail-feed tuning |
-| GB01, GB02 | Standard generation cat printers |
-| GB03  | Supports compressed bitmaps (`requires_new_start` protocol) |
-| GT01, YT01 | Standard protocol, fully compatible |
-| MX05, MX06, MX08 | Feed-quirk workaround applied automatically |
-| Other cat-printer-compatible models | Very likely to work — try `--model GB01` first |
+### Interface improvements
 
-> Models follow the naming convention used by the underlying BLE protocol.
-> `GB0X` covers GB01–GB09; `MX0X` covers those variants similarly.
+- Printer setup and connection controls moved to Settings
+- First-run printer setup dialog
+- Automatic dialog dismissal after a successful connection
+- Hamburger navigation for Print, Settings, and About
+- Clearly visible active navigation state
+- Light, dark, and system theme modes
+- Native Android system-theme integration
+- Persistent, readable print preview while adjusting content
 
-## Repository structure
+### Text printing
 
-```
-MeowPrinter/
-├── backend/                 Python package (FastAPI server + CLI + driver)
-│   └── src/meowprinter/
-├── frontend/                Preact + Vite web UI
-│   └── src/
-├── android_java_src/        Java patches compiled into the Android APK
-├── main.py                  Android p4a entry point
-├── buildozer.spec           Android build configuration
-├── build-android.ps1        One-command Android build (Windows)
-├── build-android.sh         One-command Android build (Linux/macOS)
-├── build-helper.sh          Helper script that runs inside Docker
-└── docs/
-    ├── installation-pc.md   Desktop installation guide
-    └── build-android.md     Android APK build guide
-```
+- Sans Serif, Serif, and Monospace fonts
+- Font size from 12 to 96 px
+- Left, center, and right alignment
+- LTR and RTL direction
+- Optional word wrapping
+- Android keyboard-aware editor layout
+- Reduced vertical whitespace and paper use
 
-The `meowprinter/`, `www/`, and `bin/` folders at the project root are
-**generated automatically** by the build script and are not committed to git.
+## Supported device
 
-## Quick start
+The fork has been tested with:
 
-### Desktop (web UI)
+- **Model:** X5h-DBA2
+- **Print width:** 384 px
+- **Architecture:** Android arm64-v8a
+
+Other compatible printer revisions may work, but have not been verified by the maintainer.
+
+## Build
+
+The Android build uses Docker, Buildozer, and python-for-android.
+
+For normal TypeScript and CSS changes, use:
 
 ```bash
-# 1. Install the Python package (see docs/installation-pc.md for full details)
-cd backend
-pip install -e ".[all]"
-
-# 2. Build the frontend
-cd ../frontend
-npm install
-npm run build
-
-# 3. Run the server
-cd ../backend
-python -m meowprinter.cli serve
-# → Open http://localhost:8095 in your browser
+./build-android.sh debug
 ```
 
-### Android APK
+Do not run a clean Android rebuild for ordinary frontend changes. A clean rebuild recreates the Python build environment and is only appropriate when native dependencies or the Android toolchain change.
 
-```powershell
-# Windows — requires Docker Desktop
-.\build-android.ps1
-# APK lands in bin\meowprinter-1.0.0-arm64-v8a-debug.apk
+A successful verified build ends with:
+
+```text
+VERIFIED: PythonScanCallback present
+VERIFIED: PythonBluetoothGattCallback present
+VERIFIED: original PythonActivity file picker present
 ```
 
-See [docs/build-android.md](docs/build-android.md) for the full guide and known issues.
+Install only the APK whose filename ends in `-verified.apk`.
 
-## CLI reference
+## Known limitations
 
-```
-meowprinter-cli scan                         Scan for nearby printers
-meowprinter-cli print-image FILE             Print an image
-meowprinter-cli print-text "hello"           Render and print text
-meowprinter-cli serve                        Start the web UI server
+- Interactive image cropping with draggable handles is not implemented yet.
+- Automatic reconnection requires Bluetooth to be enabled and Android Nearby Devices permission to have been granted.
+- Thermal energy and quality may require adjustment across printer hardware revisions.
+- Hardware support is verified specifically on X5h-DBA2.
 
-python -m meowprinter.tickets                Generate / print numbered tickets
-python -m meowprinter.addresses              Generate / print address labels
-```
+## Credits
 
-Run any subcommand with `--help` for full options.
+MeowPrinter X5h is based on [MeowPrinter](https://github.com/elyez-dev/MeowPrinter), originally created by **elyez-dev**.
 
-## Legal disclaimer
-
-This project communicates with thermal printers over Bluetooth Low Energy using
-a protocol that has been reverse-engineered from publicly observable traffic.
-**I am not affiliated with, endorsed by, or connected to any manufacturer or
-their official applications.** Reverse engineering for interoperability purposes
-is widely recognised as lawful under applicable law (including EU Directive
-2009/24/EC and relevant US case law). No proprietary code, firmware, or assets
-were copied or redistributed.
-
-## Acknowledgements
-
-MeowPrinter builds on the work of many people and projects:
-
-**Direct foundations**
-- [Cat-Printer](https://github.com/NaitLee/Cat-Printer) by **NaitLee** — the original
-  open-source cat printer toolkit from which this project was based on. Without it, none of this would have been possible.
-- [catprinter](https://github.com/rbaron/catprinter) by **rbaron** — an early
-  reverse-engineering effort that helped establish the BLE protocol.
-- [catprinter](https://github.com/rhnvrm/catprinter) by **rhnvrm** — another
-  independent implementation that contributed to protocol understanding.
-
-**Core technologies**
-- [Python](https://www.python.org/) — the backbone of the whole backend.
-- [Bleak](https://bleak.readthedocs.io/en/latest/) — the Bluetooth Low Energy library
-  that makes cross-platform BLE scanning and connection possible.
-- [FastAPI](https://fastapi.tiangolo.com/) + [Uvicorn](https://www.uvicorn.org/) —
-  the desktop web server.
-- [Pillow](https://python-pillow.org/) — image loading, dithering, and PBM generation.
-- [pyzbar](https://github.com/NaturalHistoryMuseum/pyzbar) — barcode and QR code decoding.
-- [Preact](https://preactjs.com/) + [@preact/signals](https://preactjs.com/guide/v10/signals/) —
-  the lightweight frontend framework and reactive state layer.
-- [Vite](https://vite.dev/) — frontend build tooling and dev server.
-- [TypeScript](https://www.typescriptlang.org/) — type safety across the frontend.
-
-**Android build**
-- [python-for-android (p4a)](https://python-for-android.readthedocs.io/en/latest/) —
-  the toolchain that compiles Python and its dependencies for Android. Powerful,
-  though occasionally painful.
-- [Buildozer](https://buildozer.readthedocs.io/en/latest/) — the build system that
-  orchestrates p4a and produces the APK.
-- [kivy/buildozer Docker image](https://hub.docker.com/r/kivy/buildozer) — makes
-  reproducible Android builds possible on any machine with Docker.
-- [AdvancedWebView](https://github.com/delight-im/Android-AdvancedWebView) — a lifesaver
-  that informed the WebChromeClient file-picker implementation without requiring a full
-  Java rewrite.
+X5h-DBA2 compatibility, Android build corrections, interface changes, and text-printing improvements are developed and maintained by **foldae**.
 
 ## License
 
-GPL-3.0-or-later — see [LICENSE](LICENSE).
-
-## Pre-built APK
-
-If you don't want to go through the pain that I suffered when building the APK yourself, I have good news for you! You can download and try the APK for free [here](https://elyez-dev.itch.io/meowprinter), consider making a donation!
-
-## Author
-
-<img src="images/printer_photo.jpeg" alt="Printer thank you" width="30%">
-
-My profile: [elyez-dev](https://github.com/elyez-dev)
-
----
-
-
+GPL-3.0-or-later. See [LICENSE](LICENSE).
