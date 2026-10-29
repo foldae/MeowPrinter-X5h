@@ -4,6 +4,17 @@ MODE="${1:-debug}"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 
+# Recreate the pinned python-for-android source after a clean clone.
+P4A_DIR="$ROOT/p4a-fixed"
+P4A_COMMIT="d2ee8c54d9d42375a95f18159e950a119671cf63"
+if [ ! -d "$P4A_DIR/.git" ]; then
+  rm -rf "$P4A_DIR"
+  git clone https://github.com/kivy/python-for-android.git "$P4A_DIR"
+fi
+git -C "$P4A_DIR" fetch --depth 1 origin "$P4A_COMMIT"
+git -C "$P4A_DIR" checkout --detach "$P4A_COMMIT"
+
+
 echo "[1/4] Building original frontend"
 cd frontend
 npm install --silent

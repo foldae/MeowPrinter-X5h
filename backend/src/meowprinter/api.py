@@ -27,7 +27,7 @@ async def _in_thread(fn, *args, **kwargs):
     """Run a blocking function in a thread so it doesn't conflict with uvicorn's event loop."""
     return await asyncio.to_thread(functools.partial(fn, *args, **kwargs))
 
-app = FastAPI(title="MeowPrinter", version="1.0.0")
+app = FastAPI(title="MeowPrinter X5h", version="1.1.0")
 
 # ---------------------------------------------------------------------------
 # Shared state

@@ -1,216 +1,90 @@
-# Android APK Build Guide
+# Android build guide
 
-This guide explains how to build the MeowPrinter Android APK from source.
-The build uses **Docker** and **Buildozer** so you don't need Android Studio,
-and the entire toolchain is self-contained inside the container.
+This guide describes the verified Linux/Docker build workflow for MeowPrinter X5h.
 
----
+## Requirements
 
-## Prerequisites
+- Docker
+- Git
+- Node.js 18 or newer
+- npm
+- A network connection for the first build
 
-### Docker Desktop
+## Normal build
 
-Download and install from [docker.com](https://www.docker.com/products/docker-desktop/).
-Make sure the Docker daemon is running before building.
-
-### Node.js 18+
-
-The build script compiles the frontend before packaging.
-Download from [nodejs.org](https://nodejs.org/).
-
-That's it. Everything else (Android SDK, NDK, Python for Android) is downloaded
-automatically on the first build.
-
----
-
-## Building
-
-Open PowerShell in the `MeowPrinter/` folder and run:
-
-```powershell
-.\build-android.ps1
-```
-
-What the script does:
-1. Runs `npm run build` inside `frontend/` to compile the web UI
-2. Copies `frontend/dist/` → `www/` (served by the on-device HTTP server)
-3. Copies `backend/src/meowprinter/` → `meowprinter/` (Python source for the APK)
-4. Launches the `kivy/buildozer` Docker container, which:
-   - Downloads Android SDK + NDK on first run (~1 GB, cached afterwards)
-   - Compiles Python 3 and all dependencies for ARM64
-   - Patches the bleak BLE Java classes into the Gradle project
-   - Patches `PythonActivity.java` for WebView file picker support
-   - Runs Gradle to produce the APK
-5. Copies the finished APK to `bin/`
-
-**First build:** 30–90 minutes (downloads ~3 GB of SDK/NDK/Python packages).
-**Subsequent builds:** 3–10 minutes (SDK and compiled packages are cached in
-`~/.buildozer/`).
-
-The APK lands at:
-```
-bin\meowprinter-1.0.0-arm64-v8a-debug.apk
-```
-
----
-
-## Build a release APK
-
-```powershell
-.\build-android.ps1 release
-```
-
-Note: release APKs must be signed before installing. Debug APKs can be
-sideloaded directly.
-
----
-
-## Installing on your phone
-
-Enable **Developer Options** and **USB Debugging**, then:
+For TypeScript, CSS, documentation, branding, and ordinary Python source changes, run:
 
 ```bash
-adb install bin\meowprinter-1.0.0-arm64-v8a-debug.apk
+./build-android.sh debug
 ```
 
-Or copy the APK to the phone and open it with a file manager.
+Do not run a clean Android rebuild for ordinary frontend changes. The normal build preserves the working Android distribution and avoids recreating the Python build environment.
 
----
+The script automatically:
 
-## Architecture
+1. builds the Preact frontend;
+2. copies frontend and backend sources into the Android private data;
+3. recreates the pinned `python-for-android` checkout if it is absent;
+4. builds the initial python-for-android distribution;
+5. overlays the required Bleak callbacks and customized `PythonActivity`;
+6. runs Gradle directly;
+7. checks the final DEX;
+8. copies only the verified APK to `bin/`.
 
-```
-build-android.ps1  (Windows host)
-  └─ docker run kivy/buildozer
-       └─ build-helper.sh  (inside container)
-            ├─ sdkmanager: install platforms;android-33
-            ├─ patch_java(): copy bleak + PythonActivity Java files into dist
-            └─ buildozer android debug
-                 └─ python-for-android (p4a)
-                      ├─ compile Python 3 + deps for arm64-v8a
-                      ├─ bundle meowprinter/ + www/ as private data
-                      └─ Gradle → APK
-```
+## Required verification output
 
-On Android, the app starts a lightweight HTTP server (`server_lite.py`) on
-`localhost:8095` using Python's stdlib `http.server` (no FastAPI/uvicorn).
-The WebView bootstrap connects to it and loads the same frontend.
+A successful build must include:
 
----
-
-## Known issues and fixes already applied
-
-These problems were encountered during development and are already fixed in
-the repository. You should not hit them, but they are documented here in case
-something similar appears.
-
-### 1. `bleak` Java classes missing at runtime
-
-**Symptom:** `JVM exception: Didn't find class "com.github.hbldh.bleak.PythonScanCallback"`
-**Cause:** `bleak` ships two Java helper classes
-(`PythonScanCallback.java` and `PythonBluetoothGattCallback.java`) that must
-be compiled into the APK. Buildozer does not do this automatically.
-**Fix:** `build-helper.sh` copies both files from `android_java_src/` into
-the Gradle dist before compiling. The Java source files are committed in
-`android_java_src/com/github/hbldh/bleak/`.
-
-### 2. File picker not working in WebView
-
-**Symptom:** Tapping "Open image" or "Open badge" on Android did nothing.
-**Cause:** The default p4a WebView bootstrap does not implement
-`WebChromeClient.onShowFileChooser()`, so `<input type="file">` silently fails.
-**Fix:** A patched `PythonActivity.java` (in `android_java_src/org/kivy/android/`)
-adds a `WebChromeClient` with `onShowFileChooser` and `onActivityResult` support.
-`build-helper.sh` patches it in every build.
-
-### 3. `warn_on_root = 1` causes build to hang
-
-**Symptom:** Build waits for input forever inside Docker (no TTY).
-**Cause:** Buildozer prompts interactively when running as root.
-**Fix:** `buildozer.spec` has `warn_on_root = 0`.
-
-### 4. `orientation = user` is invalid
-
-**Symptom:** Buildozer error about unknown orientation value.
-**Fix:** Changed to `orientation = portrait` in `buildozer.spec`.
-
-### 5. Android SDK platform not installed by default
-
-**Symptom:** Gradle fails with "Failed to find target android-33".
-**Cause:** The `kivy/buildozer` Docker image only has the SDK command-line tools,
-not the actual platform packages.
-**Fix:** `build-helper.sh` runs `sdkmanager "platforms;android-33" "build-tools;33.0.0"` before Buildozer starts.
-
-### 6. Cache stored in `/root/.buildozer` instead of `/home/user/.buildozer`
-
-**Cause:** The build runs as root inside Docker (needed to fix other permission
-issues). Buildozer therefore writes its cache to `/root/` not `/home/user/`.
-**Fix:** `build-android.ps1` mounts `~/.buildozer` on the host to
-`/root/.buildozer` in the container, so the cache persists correctly.
-
----
-
-## Possible issues you may still encounter
-
-### BLE permissions denied on Android 12+
-
-Android 12 added new `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT` permissions that
-require runtime approval. The app requests them on first launch. If you dismiss
-the dialog, go to **Settings → Apps → MeowPrinter → Permissions** and enable
-Nearby devices.
-
-### Samsung / One UI icon shows white background
-
-Samsung's launcher applies its own adaptive icon shape and may ignore the
-`android.adaptive_icon_background` setting. This is a Samsung-specific
-behaviour with no reliable fix from the app side. The icon functions correctly;
-only the appearance is affected.
-
-### App settings reset to defaults after update
-
-The app stores settings in internal storage. Uninstalling or doing a data clear
-before installing the new APK resets everything to defaults (including
-`scan_time = 12 s`). This is expected.
-
-### First scan takes longer than expected
-
-The default scan time is 12 seconds. Some printers (especially PD01) can take
-8–10 seconds to appear. If your printer is not found, try scanning again or
-move it closer to the phone.
-
-### `docker: Error response from daemon: ...`
-
-Make sure Docker Desktop is running. On Windows, Docker Desktop must be started
-manually after reboot (it does not always auto-start).
-
-### Build fails with `Could not find or load main class`
-
-This can happen if the `.buildozer/` cache is corrupted. Delete
-`~/.buildozer/android/` and rebuild. The first build will re-download the SDK.
-
----
-
-## Updating the app
-
-After changing Python backend code or frontend source:
-
-```powershell
-.\build-android.ps1
+```text
+VERIFIED: PythonScanCallback present
+VERIFIED: PythonBluetoothGattCallback present
+VERIFIED: original PythonActivity file picker present
 ```
 
-The build script always rebuilds the frontend and re-copies the Python source,
-so your changes are included. Only the final Gradle step is incremental
-(re-runs only if source changed).
+Install only an APK whose filename ends in `-verified.apk`.
 
----
+## Pinned python-for-android source
 
-## Linux / macOS build
+`build-android.sh` automatically checks out this pinned commit into the ignored `p4a-fixed/` directory:
 
-A `build-android.sh` script is provided for non-Windows hosts:
+```text
+d2ee8c54d9d42375a95f18159e950a119671cf63
+```
+
+The directory is intentionally not committed. A clean clone recreates it automatically.
+
+## Python 3.14 pip compatibility
+
+The verified toolchain must not upgrade pip inside the temporary python-for-android virtual environment. If a checkout reintroduces:
+
+```text
+pip install -U pip
+```
+
+and fails with `BuildDependencyInstallError`, restore the pinned python-for-android commit above. Do not delete the Android SDK or NDK.
+
+## Docker file ownership
+
+The build passes the host UID and GID into the container and returns ownership of `.buildozer/` and `bin/` when the build exits. If old artifacts are still owned by root, repair them once:
 
 ```bash
-chmod +x build-android.sh
-./build-android.sh
+sudo chown -R "$(id -u):$(id -g)" .buildozer bin
 ```
 
-It performs the same steps as the PowerShell script.
+## Installing the APK
+
+```bash
+APK=$(find bin -maxdepth 1 -type f -name '*-verified.apk' | head -n 1)
+adb uninstall io.github.meowprinter.meowprinter || true
+adb install "$APK"
+```
+
+## Release checklist
+
+- Build ends with all three `VERIFIED` lines.
+- X5h-DBA2 scanning and connection work.
+- Automatic reconnection works.
+- Android image selection works.
+- Text and image printing work.
+- Light, dark, and system themes work.
+- The release APK SHA-256 checksum is generated.
