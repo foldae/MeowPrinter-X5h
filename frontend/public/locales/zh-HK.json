@@ -87,7 +87,6 @@
     "everyone-is-awesome": "每個人都是好樣的！",
     "license": "授權",
     "exiting": "退出中……",
-
     "dark-theme": "深色主題",
     "high-contrast": "高對比度",
     "welcome": "歡迎！",
@@ -156,5 +155,12 @@
     "there-are-multiple-devices-": "有多個設備：",
     "choose-which-one-0-": "選擇哪一個？[{0}]：",
     "multiple-devices-found-please-specify-one": "找到多個設備，請指定",
-    "no-prompt-for-multiple-devices": "發現多個設備時不提示選擇"
+    "no-prompt-for-multiple-devices": "發現多個設備時不提示選擇",
+    "text-alignment": "對齊",
+    "align-left": "靠左",
+    "align-center": "置中",
+    "align-right": "靠右",
+    "text-direction": "文字方向",
+    "direction-ltr": "由左至右",
+    "direction-rtl": "由右至左"
 }

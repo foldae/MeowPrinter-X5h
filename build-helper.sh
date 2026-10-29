@@ -8,6 +8,15 @@ SRC="$ROOT/android_java_src"
 
 cd "$ROOT"
 
+P4A="$ROOT/.buildozer/android/platform/python-for-android"
+if [ -d "$P4A" ]; then
+  git config --global --add safe.directory "$P4A"
+  if ! git -C "$P4A" config --get remote.origin.url >/dev/null 2>&1; then
+    git -C "$P4A" remote remove origin 2>/dev/null || true
+    git -C "$P4A" remote add origin https://github.com/kivy/python-for-android.git
+  fi
+fi
+
 # Generate the p4a distribution and all Gradle files. Its APK is disposable.
 buildozer android "$MODE"
 

@@ -3,9 +3,60 @@ import { showTextModal, sourceImage, sourceKind, sourceFile, processMode } from 
 import { PRINTER_WIDTH } from "../utils/image-processing";
 import { t } from "../hooks/useI18n";
 
+type FontFamily = "sans-serif" | "serif" | "monospace";
+type TextAlign = "left" | "center" | "right";
+type TextDirection = "ltr" | "rtl";
+
+const VERTICAL_PADDING = 6;
+const HORIZONTAL_PADDING = 12;
+
+function wrapParagraph(
+  context: CanvasRenderingContext2D,
+  paragraph: string,
+  maxWidth: number,
+  wrapByWords: boolean,
+): string[] {
+  if (paragraph.length === 0) return [""];
+  const tokens = wrapByWords ? paragraph.split(/(\s+)/).filter(Boolean) : Array.from(paragraph);
+  const lines: string[] = [];
+  let line = "";
+
+  for (const token of tokens) {
+    const candidate = line + token;
+    if (line && context.measureText(candidate).width > maxWidth) {
+      lines.push(line.trimEnd());
+      line = token.trimStart();
+    } else {
+      line = candidate;
+    }
+
+    // A single token can be wider than the paper. Split it safely by Unicode character.
+    if (context.measureText(line).width > maxWidth) {
+      let fragment = "";
+      for (const char of Array.from(line)) {
+        if (fragment && context.measureText(fragment + char).width > maxWidth) {
+          lines.push(fragment);
+          fragment = char;
+        } else {
+          fragment += char;
+        }
+      }
+      line = fragment;
+    }
+  }
+
+  lines.push(line.trimEnd());
+  return lines;
+}
+
 export function TextModal() {
   const tr = t.value;
   const [text, setText] = useState("");
+  const [fontFamily, setFontFamily] = useState<FontFamily>("sans-serif");
+  const [fontSize, setFontSize] = useState(32);
+  const [textAlign, setTextAlign] = useState<TextAlign>("left");
+  const [direction, setDirection] = useState<TextDirection>("ltr");
+  const [wrapByWords, setWrapByWords] = useState(true);
 
   const close = () => {
     showTextModal.value = false;
@@ -15,83 +66,120 @@ export function TextModal() {
   const insert = () => {
     if (!text.trim()) return;
 
-    const fontSize = 32;
-    const padding = 20;
-    const lineHeight = fontSize * 1.2;
+    const size = Math.max(12, Math.min(96, Math.round(fontSize || 32)));
+    const lineHeight = Math.ceil(size * 1.12);
+    const maxWidth = PRINTER_WIDTH - HORIZONTAL_PADDING * 2;
+    const font = `${size}px ${fontFamily}`;
 
-    // Measure wrapped lines.
     const measure = document.createElement("canvas").getContext("2d")!;
-    measure.font = `${fontSize}px sans-serif`;
+    measure.font = font;
+    measure.direction = direction;
 
-    const lines: string[] = [];
-    for (const para of text.split("\n")) {
-      if (!para.trim()) {
-        lines.push("");
-        continue;
-      }
-      let line = "";
-      for (const word of para.split(" ")) {
-        const test = line + word + " ";
-        if (measure.measureText(test).width > PRINTER_WIDTH - padding * 2 && line) {
-          lines.push(line);
-          line = word + " ";
-        } else {
-          line = test;
-        }
-      }
-      lines.push(line);
-    }
+    const lines = text
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .flatMap((paragraph) => wrapParagraph(measure, paragraph, maxWidth, wrapByWords));
 
-    // Render to an off-screen canvas.
     const canvas = document.createElement("canvas");
     canvas.width = PRINTER_WIDTH;
-    canvas.height = Math.max(lines.length * lineHeight + padding * 2, 100);
+    canvas.height = Math.max(1, lines.length * lineHeight + VERTICAL_PADDING * 2);
     const ctx = canvas.getContext("2d")!;
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "black";
-    ctx.font = `${fontSize}px sans-serif`;
+    ctx.font = font;
     ctx.textBaseline = "top";
-    lines.forEach((l, i) => ctx.fillText(l.trim(), padding, padding + i * lineHeight));
+    ctx.textAlign = textAlign;
+    ctx.direction = direction;
 
-    // Feed as an image into the store.
+    const x = textAlign === "left"
+      ? HORIZONTAL_PADDING
+      : textAlign === "center"
+        ? PRINTER_WIDTH / 2
+        : PRINTER_WIDTH - HORIZONTAL_PADDING;
+    lines.forEach((line, index) => ctx.fillText(line, x, VERTICAL_PADDING + index * lineHeight, maxWidth));
+
     const img = new Image();
     img.onload = () => {
       sourceImage.value = img;
       sourceKind.value = "image";
       sourceFile.value = null;
-      // Suggest direct-threshold for crisp text.
       if (processMode.value !== "text") processMode.value = "text";
       close();
     };
     img.src = canvas.toDataURL("image/png");
   };
 
+  if (!showTextModal.value) return null;
+
   return (
     <div class="modal-overlay" onClick={close}>
-      <div class="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div class="modal-content text-editor-modal" onClick={(event) => event.stopPropagation()}>
         <div class="modal-header">
-          {tr("insert-text")}
-          <button class="btn-icon" onClick={close}>
-            &times;
-          </button>
+          <span>{tr("insert-text")}</span>
+          <button class="btn-icon" onClick={close}>×</button>
         </div>
 
         <textarea
-          class="text-input"
-          style={{ minHeight: "150px", resize: "vertical" }}
+          class="text-input text-editor-input"
+          dir={direction}
+          style={{
+            textAlign,
+            fontFamily,
+            fontSize: `${Math.max(12, Math.min(96, fontSize || 32))}px`,
+            lineHeight: "1.2",
+          }}
           value={text}
-          onInput={(e) => setText((e.target as HTMLTextAreaElement).value)}
+          onFocus={(event) => {
+            const target = event.currentTarget as HTMLTextAreaElement;
+            window.setTimeout(() =>
+              target.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+          }}
+          onInput={(event) => setText((event.target as HTMLTextAreaElement).value)}
           placeholder={tr("enter-text")}
         />
 
+        <div class="text-editor-grid">
+          <label>
+            <span>{tr("text-font")}</span>
+            <select class="select-input" value={fontFamily} onChange={(event) => setFontFamily((event.target as HTMLSelectElement).value as FontFamily)}>
+              <option value="sans-serif">{tr("sans-serif")}</option>
+              <option value="serif">{tr("serif")}</option>
+              <option value="monospace">{tr("monospace")}</option>
+            </select>
+          </label>
+
+          <label>
+            <span>{tr("text-size")}</span>
+            <input class="text-input" type="number" min="12" max="96" step="1" value={fontSize} onInput={(event) => setFontSize(Number((event.target as HTMLInputElement).value))} />
+          </label>
+
+          <label>
+            <span>{tr("text-alignment")}</span>
+            <select class="select-input" value={textAlign} onChange={(event) => setTextAlign((event.target as HTMLSelectElement).value as TextAlign)}>
+              <option value="left">{tr("align-left")}</option>
+              <option value="center">{tr("align-center")}</option>
+              <option value="right">{tr("align-right")}</option>
+            </select>
+          </label>
+
+          <label>
+            <span>{tr("text-direction")}</span>
+            <select class="select-input" value={direction} onChange={(event) => setDirection((event.target as HTMLSelectElement).value as TextDirection)}>
+              <option value="ltr">{tr("direction-ltr")}</option>
+              <option value="rtl">{tr("direction-rtl")}</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="text-editor-check">
+          <input type="checkbox" checked={wrapByWords} onChange={(event) => setWrapByWords((event.target as HTMLInputElement).checked)} />
+          <span>{tr("wrap-words-by-spaces")}</span>
+        </label>
+
         <div class="flex-row mt-sm" style={{ justifyContent: "flex-end" }}>
-          <button class="btn-secondary" onClick={close}>
-            {tr("cancel")}
-          </button>
-          <button class="btn-primary" style={{ width: "auto" }} onClick={insert} disabled={!text.trim()}>
-            {tr("ok")}
-          </button>
+          <button class="btn-secondary" onClick={close}>{tr("cancel")}</button>
+          <button class="btn-primary" style={{ width: "auto" }} onClick={insert} disabled={!text.trim()}>{tr("ok")}</button>
         </div>
       </div>
     </div>
