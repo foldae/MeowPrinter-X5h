@@ -43,4 +43,6 @@ MODELS: dict[str, PrinterModel] = {
     "MX08": _FEED_QUIRK,
     # PD01 family — shorter tail feed for easy tearing
     "PD01": _PD01,
+    # X5h-DBA2: standard 384 px Tiny protocol profile
+    "X5h-DBA2": _DEFAULT,
 }
