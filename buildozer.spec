@@ -12,7 +12,7 @@ version = 1.1.0
 #   www/              ← Built frontend (copied from frontend/dist/)
 source.dir = .
 source.include_exts = py,png,jpg,json,html,css,js,svg,ico,woff,woff2,ttf
-source.include_patterns = main.py,meowprinter/**,www/**,images/meowprinter_logo.png
+source.include_patterns = main.py,meowprinter/**,www/**,images/meowprinter_x5h_icon.png,images/meowprinter_x5h_splash.png
 source.exclude_patterns = buildozer.spec,build-android.*,frontend/**,backend/**,.git/**,node_modules/**,.buildozer/**,bin/**
 
 # Python 3
@@ -39,7 +39,7 @@ android.permissions = BLUETOOTH,BLUETOOTH_SCAN,BLUETOOTH_CONNECT,BLUETOOTH_ADMIN
 # Branding
 icon.filename = images/meowprinter_x5h_icon.png
 android.adaptive_icon_background = #2AA8A8
-android.adaptive_icon_foreground = images/meowprinter_logo.png
+android.adaptive_icon_foreground = images/meowprinter_x5h_icon.png
 presplash.filename = images/meowprinter_x5h_splash.png
 presplash.color = #141418
 
