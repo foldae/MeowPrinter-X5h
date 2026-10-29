@@ -1,0 +1,124 @@
+import { useEffect } from "preact/hooks";
+import {
+  activeTab, theme, energy, quality, scanTime, dryRun,
+  isConnected, connectionStatus, selectedDevice,
+} from "./hooks/useStore";
+import { connectDevice, getSettings, updateSettings } from "./utils/api-client";
+import { setLanguage } from "./hooks/useI18n";
+import type { Device } from "./types";
+
+import { PrintSettings } from "./components/PrintSettings";
+import { SettingsPanel } from "./components/SettingsPanel";
+import { CanvasArea } from "./components/CanvasArea";
+import { Navigation } from "./components/Navigation";
+
+const LAST_PRINTER_KEY = "meowprinter-last-device";
+
+export function App() {
+  const currentTheme = theme.value;
+  const tab = activeTab.value;
+  const connectedDevice = selectedDevice.value;
+  const connected = isConnected.value;
+
+  useEffect(() => {
+    getSettings()
+      .then((settings) => {
+        energy.value = settings.energy;
+        quality.value = settings.quality;
+        scanTime.value = settings.scan_time || 5;
+        dryRun.value = settings.dry_run;
+        if (!settings.scan_time || settings.scan_time === 12) {
+          scanTime.value = 5;
+          updateSettings({ scan_time: 5 }).catch(() => {});
+        }
+      })
+      .catch(() => {});
+
+    const savedLang = localStorage.getItem("meowprinter-lang");
+    if (savedLang) setLanguage(savedLang);
+    const savedTheme = localStorage.getItem("meowprinter-theme");
+    if (savedTheme === "dark" || savedTheme === "light") theme.value = savedTheme;
+
+    // Direct reconnect uses the stored BLE address. No new nearby-device scan is
+    // started, so Android location is not requested again after first setup.
+    const raw = localStorage.getItem(LAST_PRINTER_KEY);
+    if (raw) {
+      try {
+        const device = JSON.parse(raw) as Device;
+        selectedDevice.value = device;
+        connectionStatus.value = "connecting";
+        connectDevice(device.name, device.address)
+          .then(() => {
+            isConnected.value = true;
+            connectionStatus.value = "connected";
+          })
+          .catch(() => {
+            isConnected.value = false;
+            connectionStatus.value = "idle";
+          });
+      } catch {
+        localStorage.removeItem(LAST_PRINTER_KEY);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("meowprinter-theme", currentTheme);
+    document.documentElement.setAttribute("data-theme", currentTheme);
+  }, [currentTheme]);
+
+  return (
+    <div class="app-layout" data-theme={currentTheme}>
+      <aside class="sidebar">
+        <header class="sidebar-header">
+          <div class="brand-block">
+            <img src="/meowprinter_logo.png" alt="MeowPrinter" class="logo-img" />
+            <span>MeowPrinter</span>
+          </div>
+          <button
+            class={`printer-status ${connected ? "is-connected" : "is-disconnected"}`}
+            title={connected ? connectedDevice?.name : "No printer connected"}
+            onClick={() => (activeTab.value = "settings")}
+            aria-label={connected ? `Connected to ${connectedDevice?.name}` : "No printer connected"}
+          >
+            <span class="printer-status-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9V3h12v6" />
+                <rect x="5" y="14" width="14" height="7" rx="1" />
+                <path d="M5 17H3a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" />
+                <circle cx="18" cy="12" r="0.8" fill="currentColor" stroke="none" />
+              </svg>
+            </span>
+            <span class="printer-status-dot" aria-hidden="true" />
+            <span class="printer-status-name">{connected ? connectedDevice?.name : "No printer"}</span>
+          </button>
+        </header>
+
+        <main class="sidebar-content">
+          {tab === "print" && <PrintSettings />}
+          {tab === "settings" && <SettingsPanel />}
+          {tab === "about" && <AboutPanel />}
+        </main>
+        <Navigation />
+      </aside>
+
+      {tab === "print" && (
+        <section class="workspace print-workspace">
+          <CanvasArea />
+        </section>
+      )}
+    </div>
+  );
+}
+
+function AboutPanel() {
+  return (
+    <div class="panel card about-panel">
+      <img src="/meowprinter_logo.png" alt="MeowPrinter" style={{ width: "80px" }} />
+      <h2>MeowPrinter</h2>
+      <p>Open-source toolkit for BLE thermal cat printers.</p>
+      <hr class="divider" />
+      <small>GPL-3.0-or-later</small>
+    </div>
+  );
+}

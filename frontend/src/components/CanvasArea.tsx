@@ -12,7 +12,7 @@ import {
 } from "../hooks/useStore";
 import { useCanvas } from "../hooks/useCanvas";
 import { canvasToPbm } from "../utils/image-processing";
-import { printPbm, printPdf, printBadge, updateSettings } from "../utils/api-client";
+import { printPbm, printBadge, updateSettings } from "../utils/api-client";
 import { t } from "../hooks/useI18n";
 import { energy, quality } from "../hooks/useStore";
 import { TextModal } from "./TextModal";
@@ -21,7 +21,6 @@ export function CanvasArea() {
   const tr = t.value;
   const canvasRef = useCanvas();
   const fileRef = useRef<HTMLInputElement>(null);
-  const pdfRef = useRef<HTMLInputElement>(null);
   const badgeRef = useRef<HTMLInputElement>(null);
 
   const kind = sourceKind.value;
@@ -42,12 +41,6 @@ export function CanvasArea() {
     img.src = url;
   };
 
-  const loadPdf = (f: File) => {
-    sourceImage.value = null;
-    sourceFile.value = f;
-    sourceKind.value = "pdf";
-  };
-
   const loadBadge = (f: File) => {
     sourceImage.value = null;
     sourceFile.value = f;
@@ -63,10 +56,7 @@ export function CanvasArea() {
       // Sync energy + quality right before printing
       await updateSettings({ energy: energy.value, quality: quality.value });
 
-      if (kind === "pdf" && file) {
-        const pages = await printPdf(file);
-        statusMessage.value = `${tr("finished")} (${pages} pages)`;
-      } else if (kind === "badge" && file) {
+      if (kind === "badge" && file) {
         const count = await printBadge(file);
         statusMessage.value = `${tr("finished")} (${count} badges)`;
       } else if (canvasRef.current) {
@@ -94,8 +84,7 @@ export function CanvasArea() {
     e.preventDefault();
     const f = e.dataTransfer?.files?.[0];
     if (!f) return;
-    if (f.type === "application/pdf") loadPdf(f);
-    else if (f.type.startsWith("image/")) loadImage(f);
+    if (f.type.startsWith("image/")) loadImage(f);
   };
 
   // ── render ─────────────────────────────────────────────────────────
@@ -116,17 +105,6 @@ export function CanvasArea() {
       />
       <input
         type="file"
-        ref={pdfRef}
-        style={{ display: "none" }}
-        accept="application/pdf"
-        onChange={(e) => {
-          const f = (e.target as HTMLInputElement).files?.[0];
-          if (f) loadPdf(f);
-          (e.target as HTMLInputElement).value = "";
-        }}
-      />
-      <input
-        type="file"
         ref={badgeRef}
         style={{ display: "none" }}
         accept="application/pdf,image/*"
@@ -138,7 +116,8 @@ export function CanvasArea() {
       />
 
       {/* toolbar */}
-      <div class="toolbar">
+      {kind === "none" && (
+        <div class="toolbar">
         <button class="btn-action" onClick={() => fileRef.current?.click()}>
           <IconImage />
           {tr("insert-picture")}
@@ -147,16 +126,14 @@ export function CanvasArea() {
           <IconText />
           {tr("insert-text")}
         </button>
-        <button class="btn-action hide-on-android" onClick={() => pdfRef.current?.click()}>
-          <IconPdf />
-          {tr("insert-pdf")}
-        </button>
         <button class="btn-action" onClick={() => badgeRef.current?.click()}>
           <IconBadge />
           {tr("print-badge")}
         </button>
       </div>
+      )}
 
+      <section class={`preview-action-section ${kind !== "none" ? "has-content" : "is-empty"}`}>
       {/* canvas area */}
       <div class="canvas-container" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
         {kind === "none" && (
@@ -165,14 +142,6 @@ export function CanvasArea() {
             <p class="text-center">
               <span class="desktop-only">{tr("desktop-drag-or-buttons")}</span>
               <span class="mobile-only">{tr("mobile-use-buttons-above")}</span>
-            </p>
-          </div>
-        )}
-        {kind === "pdf" && file && (
-          <div class="canvas-placeholder">
-            <IconPdf />
-            <p style={{ color: "var(--text)", marginTop: "8px" }}>
-              PDF: <strong>{file.name}</strong>
             </p>
           </div>
         )}
@@ -197,6 +166,7 @@ export function CanvasArea() {
           {isPrinting.value ? tr("printing") : tr("print")}
         </button>
       </div>
+      </section>
 
       {/* text modal */}
       {showTextModal.value && <TextModal />}
@@ -221,14 +191,6 @@ function IconText() {
       <polyline points="4 7 4 4 20 4 20 7" />
       <line x1="9" y1="20" x2="15" y2="20" />
       <line x1="12" y1="4" x2="12" y2="20" />
-    </svg>
-  );
-}
-function IconPdf() {
-  return (
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
     </svg>
   );
 }

@@ -52,3 +52,8 @@ orientation = portrait
 [buildozer]
 log_level = 2
 warn_on_root = 0
+
+
+p4a.source_dir = /home/user/hostcwd/p4a-fixed
+
+android.apptheme = @android:style/Theme.DeviceDefault.NoActionBar

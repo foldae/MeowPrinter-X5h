@@ -24,6 +24,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.pm.PackageManager;
 import android.widget.ImageView;
 import android.graphics.Bitmap;
@@ -188,6 +189,7 @@ public class PythonActivity extends Activity {
                     @Override
                     public void onPageFinished(WebView view, String url) {
                         CookieManager.getInstance().flush();
+                        PythonActivity.this.dispatchSystemThemeToWebView();
                     }
                 });
 
@@ -301,6 +303,37 @@ public class PythonActivity extends Activity {
 
     public static ViewGroup getLayout() {
         return   mLayout;
+    }
+
+    private boolean isSystemDarkMode() {
+        int nightMode = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightMode == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    private void dispatchSystemThemeToWebView() {
+        if (mWebView == null) return;
+        final boolean dark = isSystemDarkMode();
+        final String javascript =
+            "window.__MEOW_SYSTEM_DARK__=" + dark + ";" +
+            "window.dispatchEvent(new CustomEvent('meow-system-theme',{detail:{dark:" + dark + "}}));";
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mWebView != null) mWebView.evaluateJavascript(javascript, null);
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        dispatchSystemThemeToWebView();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) dispatchSystemThemeToWebView();
     }
 
     long lastBackClick = 0;

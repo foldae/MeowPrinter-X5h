@@ -1,6 +1,7 @@
-import { scanTime, dryRun, transparentAsWhite, theme } from "../hooks/useStore";
+import { themeMode, scanTime, dryRun, transparentAsWhite} from "../hooks/useStore";
 import { currentLang, setLanguage, t } from "../hooks/useI18n";
 import { updateSettings } from "../utils/api-client";
+import { DevicePanel } from "./DevicePanel";
 
 export function SettingsPanel() {
   const tr = t.value;
@@ -10,7 +11,18 @@ export function SettingsPanel() {
   };
 
   return (
-    <div class="panel card">
+    <div class="settings-stack">
+      <DevicePanel />
+      <div class="panel card theme-settings-card">
+        <h3>Theme</h3>
+        <label class="settings-field" for="meowprinter-theme-select">Appearance</label>
+        <select id="meowprinter-theme-select" class="select-input" value={themeMode.value} onChange={(event) => (themeMode.value = (event.target as HTMLSelectElement).value as "system" | "light" | "dark")}>
+          <option value="system">Follow system</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+            <div class="panel card">
       {/* Scan time */}
       <div class="form-group">
         <label>{tr("scan-time-")}</label>
@@ -85,15 +97,8 @@ export function SettingsPanel() {
 
       {/* Theme */}
       <div class="form-group row-checkbox">
-        <label class="checkbox-label">
-          <input
-            type="checkbox"
-            checked={theme.value === "dark"}
-            onChange={(e) => (theme.value = (e.target as HTMLInputElement).checked ? "dark" : "light")}
-          />
-          <span class="checkmark" />
-          {tr("dark-theme")}
-        </label>
+        
+      </div>
       </div>
     </div>
   );

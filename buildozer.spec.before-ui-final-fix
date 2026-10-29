@@ -1,0 +1,57 @@
+[app]
+
+# App metadata
+title = MeowPrinter
+package.name = meowprinter
+package.domain = io.github.meowprinter
+version = 1.0.0
+
+# Source directory — the build scripts copy everything needed to project root:
+#   main.py           ← p4a entry point
+#   meowprinter/      ← Python backend (copied from backend/src/meowprinter/)
+#   www/              ← Built frontend (copied from frontend/dist/)
+source.dir = .
+source.include_exts = py,png,jpg,json,html,css,js,svg,ico,woff,woff2,ttf
+source.include_patterns = main.py,meowprinter/**,www/**,images/meowprinter_logo.png
+source.exclude_patterns = buildozer.spec,build-android.*,frontend/**,backend/**,.git/**,node_modules/**,.buildozer/**,bin/**
+
+# Python 3
+python3 = 1
+
+# Webview bootstrap: launches a WebView that connects to our localhost server
+p4a.bootstrap = webview
+
+# Dependencies — stdlib-compatible only (no FastAPI, no uvicorn)
+requirements = python3,android,pyjnius,bleak,pillow,pyzbar,async_timeout,typing-extensions
+
+# Android SDK/NDK
+android.api = 33
+android.minapi = 26
+android.ndk_api = 26
+android.archs = arm64-v8a
+
+# Install SDK platform and build tools (required — not installed by default)
+android.sdk_packages = platforms;android-33 build-tools;33.0.0
+
+# BLE + network permissions
+android.permissions = BLUETOOTH,BLUETOOTH_SCAN,BLUETOOTH_CONNECT,BLUETOOTH_ADMIN,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,INTERNET
+
+# Branding
+icon.filename = images/meowprinter_logo.png
+android.adaptive_icon_background = #2AA8A8
+android.adaptive_icon_foreground = images/meowprinter_logo.png
+presplash.filename = images/meowprinter_logo.png
+presplash.color = #141418
+
+# Webview connects to this port
+p4a.port = 8095
+
+# Orientation
+orientation = portrait
+
+[buildozer]
+log_level = 2
+warn_on_root = 0
+
+
+p4a.source_dir = /home/user/hostcwd/p4a-fixed

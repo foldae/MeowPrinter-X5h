@@ -26,7 +26,7 @@ export const transparentAsWhite = signal(true);
 
 // ─── app settings ──────────────────────────────────────────────────────
 
-export const scanTime = signal(12);
+export const scanTime = signal(5);
 export const dryRun = signal(false);
 export const flipH = signal(false);
 export const flipV = signal(false);
@@ -48,6 +48,8 @@ export const energyCssFilter = computed(() => {
 // ─── UI state ──────────────────────────────────────────────────────────
 
 export const activeTab = signal<TabId>("print");
+export type ThemeMode = "system" | "light" | "dark";
+export const themeMode = signal<ThemeMode>("system");
 export const theme = signal<"light" | "dark">("light");
 
 // ─── source content ────────────────────────────────────────────────────

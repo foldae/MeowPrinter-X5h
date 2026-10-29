@@ -2,6 +2,12 @@
 set -euo pipefail
 MODE="${1:-debug}"
 ROOT=/home/user/hostcwd
+HOST_UID="${HOST_UID:-1000}"
+HOST_GID="${HOST_GID:-1000}"
+restore_host_ownership() {
+  chown -R "$HOST_UID:$HOST_GID" "$ROOT/.buildozer" "$ROOT/bin" 2>/dev/null || true
+}
+trap restore_host_ownership EXIT
 DIST="$ROOT/.buildozer/android/platform/build-arm64-v8a/dists/meowprinter"
 JAVA="$DIST/src/main/java"
 SRC="$ROOT/android_java_src"

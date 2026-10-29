@@ -38,7 +38,7 @@ _settings: dict[str, Any] = {
     "version": 4,
     "first_run": True,
     "is_android": IS_ANDROID,
-    "scan_time": 12.0,
+    "scan_time": 5.0,
     "dry_run": False,
     "energy": 64,
     "quality": 36,
@@ -87,7 +87,7 @@ def _save_config() -> None:
 
 def _sync_driver() -> None:
     _driver.dry_run = bool(_settings.get("dry_run"))
-    _driver.scan_time = float(_settings.get("scan_time", 12.0))
+    _driver.scan_time = float(_settings.get("scan_time", 5.0))
     _driver.fake = bool(_settings.get("fake"))
     energy = _settings.get("energy")
     if energy is not None:
